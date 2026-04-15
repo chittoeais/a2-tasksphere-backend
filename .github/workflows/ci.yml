@@ -1,0 +1,39 @@
+name: Backend CI - TaskSphere
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-test-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build backend Docker image
+        run: |
+          docker build -t a2-tasksphere-backend .
+
+      - name: Run unit and integration tests inside container
+        run: |
+          set +e
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/workspace" \
+            -w /workspace \
+            -e MONGODB_URL="mongodb://localhost:27017" \
+            -e SECRET_KEY="ci-test-secret-key" \
+            a2-tasksphere-backend \
+            python -m pytest -vv --no-header --no-summary --disable-warnings
+          test_status=$?
+          set -e
+
+          if [ "$test_status" -eq 5 ]; then
+            echo "No pytest tests were collected (exit code 5). Continuing CI."
+            exit 0
+          fi
+
+          exit "$test_status"
