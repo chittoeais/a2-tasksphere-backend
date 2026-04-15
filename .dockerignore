@@ -1,0 +1,26 @@
+# .dockerignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv
+*.egg-info/
+dist/
+build/
+.git
+.gitignore
+.env
+.env.*
+*.sqlite3
+db.sqlite3
+.DS_Store
+node_modules/
+npm-debug.log
+.vscode/
+.idea/
+.pytest_cache/
+htmlcov/
+.coverage
