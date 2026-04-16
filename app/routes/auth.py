@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status, Depends
 
 from app.models.auth import UserRegister, UserLogin, TokenResponse
-from app.auth import hash_password, verify_password, create_access_token
+from app.auth import hash_password, verify_password, create_access_token, get_current_user_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -30,3 +30,7 @@ async def login(payload: UserLogin, request: Request):
 
     token = create_access_token(payload.email)
     return TokenResponse(access_token=token)
+
+@router.post("/logout")
+async def logout(user_email: str = Depends(get_current_user_email)):
+    return {"message": "Logged out successfully. Client should remove the token."}
