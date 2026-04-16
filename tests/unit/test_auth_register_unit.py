@@ -30,16 +30,3 @@ async def test_register_rejects_duplicate_email(unit_request):
 
     assert exc.value.status_code == 400
     assert exc.value.detail == "Email already registered"
-
-@pytest.mark.anyio
-async def test_register_rejects_duplicated_email(unit_request):
-    users = unit_request.app.database["users"]
-    await users.insert_one({"email": "duplicate@example.com", "password_hash": "x"})
-
-    payload = UserRegister(email="duplicate@example.com", password="StrongPass1!")
-
-    with pytest.raises(HTTPException) as exc:
-        await auth_routes.register(payload=payload, request=unit_request)
-
-    assert exc.value.status_code == 400
-    assert exc.value.detail == "Email already registered"
