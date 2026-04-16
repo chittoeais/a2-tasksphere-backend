@@ -1,7 +1,7 @@
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Request, Depends
 
-from app.models.task import TaskCreate
+from app.models.task import TaskCreate, TaskUpdate
 from app.auth import get_current_user_email
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -35,3 +35,23 @@ async def create_task(payload: TaskCreate, request: Request, user_email: str = D
     result = await tasks.insert_one(doc)
     created = await tasks.find_one({"_id": result.inserted_id})
     return task_doc_to_dict(created)
+
+@router.put("/{task_id}")
+async def update_task(task_id: str, payload: TaskUpdate, request: Request, user_email: str = Depends(get_current_user_email)):
+    tasks = request.app.database["tasks"]
+
+    existing = await tasks.find_one({"_id": ObjectId(task_id), "owner_email": user_email})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    update_data = {}
+    if payload.title is not None:
+        update_data["title"] = payload.title
+    if payload.description is not None:
+        update_data["description"] = payload.description
+    if payload.status is not None:
+        update_data["status"] = payload.status
+
+    await tasks.update_one({"_id": ObjectId(task_id)}, {"$set": update_data})
+    updated = await tasks.find_one({"_id": ObjectId(task_id)})
+    return task_doc_to_dict(updated)
