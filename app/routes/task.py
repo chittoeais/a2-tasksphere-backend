@@ -12,3 +12,11 @@ def task_doc_to_dict(doc):
         "status": doc["status"],
         "owner_email": doc["owner_email"]
     }
+
+@router.get("")
+async def list_tasks(request: Request, user_email: str = Depends(get_current_user_email)):
+    tasks = request.app.database["tasks"]
+    results = []
+    async for doc in tasks.find({"owner_email": user_email}).sort("_id", -1):
+        results.append(task_doc_to_dict(doc))
+    return results
