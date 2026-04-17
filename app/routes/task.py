@@ -55,3 +55,13 @@ async def update_task(task_id: str, payload: TaskUpdate, request: Request, user_
     await tasks.update_one({"_id": ObjectId(task_id)}, {"$set": update_data})
     updated = await tasks.find_one({"_id": ObjectId(task_id)})
     return task_doc_to_dict(updated)
+
+@router.delete("/{task_id}")
+async def delete_task(task_id: str, request: Request, user_email: str = Depends(get_current_user_email)):
+    tasks = request.app.database["tasks"]
+
+    result = await tasks.delete_one({"_id": ObjectId(task_id), "owner_email": user_email})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    return {"message": "Task deleted successfully"}
