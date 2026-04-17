@@ -1,0 +1,24 @@
+{
+  "framework": null,
+  "builds": [
+    {
+      "src": "app/main.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize":  "15mb", "runtime":  "python3.9" }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app/main.py",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS, DELETE, PUT"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "app/main.py"
+    }
+  ]
+}
