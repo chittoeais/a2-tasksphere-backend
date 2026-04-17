@@ -1,4 +1,5 @@
 import pytest
+from bson import ObjectId
 from fastapi import HTTPException
 
 from app.routes import task as task_routes
@@ -40,6 +41,19 @@ async def test_delete_task_returns_404_when_not_owned(unit_request):
     with pytest.raises(HTTPException) as exc:
         await task_routes.delete_task(
             task_id=str(inserted.inserted_id),
+            request=unit_request,
+            user_email="owner@example.com",
+        )
+
+    assert exc.value.status_code == 404
+    assert exc.value.detail == "Task not found"
+
+
+@pytest.mark.anyio
+async def test_delete_task_returns_404_when_task_does_not_exist(unit_request):
+    with pytest.raises(HTTPException) as exc:
+        await task_routes.delete_task(
+            task_id=str(ObjectId()),
             request=unit_request,
             user_email="owner@example.com",
         )
